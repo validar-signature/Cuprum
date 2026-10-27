@@ -175,7 +175,18 @@
 				headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
 				body: JSON.stringify({ codigo: folio, cve: folio, documentId: folio, query: folio, name: folio, fileName: folio, source: 'CUPRUM-CERTIFICADOS' })
 			});
-			const data = await response.json();
+			const responseText = await response.text();
+			let data;
+			try {
+				data = JSON.parse(responseText);
+			} catch (error) {
+				if (response.ok && responseText.trim().toLowerCase() === 'accepted') {
+					showStatus('Make aceptó la solicitud, pero no devolvió el documento. El escenario debe responder con JSON que incluya found, name y pdf.', true);
+				} else {
+					showStatus('Make respondió en un formato no reconocido.', true);
+				}
+				return;
+			}
 			if (!response.ok || !data?.found || typeof data.pdf !== 'string' || !data.pdf.trim()) {
 				showStatus('No se encontró un certificado asociado a ese folio.', true);
 				return;
